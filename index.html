@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Video Analysis</title>
+    <style>
+        #videoPlayer {
+            width: 100%;
+            height: auto;
+            display: none; /* Hide initially */
+        }
+        button {
+            margin-top: 20px;
+        }
+    </style>
+</head>
+<body>
+    <h1>Video Analysis Tool</h1>
+    <button id="selectVideoButton">Select Video</button>
+    <div id="status"></div>
+    <button id="displayAnalysisButton" style="display:none;">Display Analysis</button>
+    <!-- New Button to display Reckless List -->
+    <button id="displayRecklessListButton" style="display:none;">Display Reckless List</button>
+    
+    <!-- Video player element -->
+    <video id="videoPlayer" controls>
+        Your browser does not support the video tag.
+    </video>
+
+    <script>
+        const { ipcRenderer } = require('electron');
+
+        document.getElementById('selectVideoButton').addEventListener('click', async () => {
+            const filePaths = await ipcRenderer.invoke('dialog:openFile');
+            console.log('File paths:', filePaths);
+            // Additional logic here if necessary
+        });
+
+        ipcRenderer.on('analysis:finished', (event, outputPath) => {
+            console.log('Analysis finished. Output path:', outputPath);
+
+            // Set status to show analysis is complete
+            document.getElementById('status').innerText = 'Finished analysis!';
+
+            // Show the "Display Analysis" button
+            const displayButton = document.getElementById('displayAnalysisButton');
+            displayButton.style.display = 'block';
+
+            // Show the video player
+            const videoPlayer = document.getElementById('videoPlayer');
+            videoPlayer.style.display = 'block';
+            videoPlayer.src = outputPath; // Set the source to the processed video
+
+            // Play the video when the analysis button is clicked
+            displayButton.onclick = () => {
+                videoPlayer.play();
+            };
+
+            // Show the "Display Reckless List" button
+            const recklessListButton = document.getElementById('displayRecklessListButton');
+            recklessListButton.style.display = 'block';
+
+            // Redirect to reckless.html when the button is clicked
+            recklessListButton.onclick = () => {
+                console.log('Redirecting to reckless.html');
+                window.location.href = 'reckless.html';
+            };
+        });
+    </script>
+</body>
+</html>

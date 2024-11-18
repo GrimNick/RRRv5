@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Reckless Vehicle Analysis</title>
+    <style>
+        #output {
+            white-space: pre-wrap;
+            font-family: monospace;
+            background-color: #f0f0f0;
+            padding: 20px;
+            border-radius: 5px;
+            max-width: 100%;
+            max-height: 400px;
+            overflow-y: auto;
+        }
+        button {
+            margin-top: 20px;
+            padding: 10px;
+            background-color: #28a745;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+    </style>
+</head>
+<body>
+    <h1>Reckless Vehicle Analysis</h1>
+    <div id="output">Console output will appear here...</div>
+    <button id="runVideoAnalysisButton">Run Video Analysis</button>
+    <button id="runExcelAnalysisButton">Run Excel Analysis</button>
+
+    <script>
+        const { ipcRenderer } = require('electron');
+
+        function logToConsole(message) {
+            const outputDiv = document.getElementById('output');
+            outputDiv.textContent += message + '\n';
+            outputDiv.scrollTop = outputDiv.scrollHeight;
+        }
+
+        // Trigger video analysis
+        document.getElementById('runVideoAnalysisButton').addEventListener('click', () => {
+            logToConsole('Starting video analysis...');
+            ipcRenderer.invoke('run-model-video');
+        });
+
+        // Trigger Excel analysis
+        document.getElementById('runExcelAnalysisButton').addEventListener('click', () => {
+            logToConsole('Starting Excel analysis...');
+            ipcRenderer.invoke('run-model-excel');
+        });
+
+        // Display output messages
+        ipcRenderer.on('model-output', (event, message) => {
+            logToConsole(message);
+        });
+    </script>
+</body>
+</html>
