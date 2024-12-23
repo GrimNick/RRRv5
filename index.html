@@ -1,72 +1,65 @@
 <!DOCTYPE html>
 <html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Video Analysis</title>
-    <style>
-        #videoPlayer {
-            width: 100%;
-            height: auto;
-            display: none; /* Hide initially */
-        }
-        button {
-            margin-top: 20px;
-        }
-    </style>
-</head>
-<body>
-    <h1>Video Analysis Tool</h1>
-    <button id="selectVideoButton">Select Video</button>
-    <div id="status"></div>
-    <button id="displayAnalysisButton" style="display:none;">Display Analysis</button>
-    <!-- New Button to display Reckless List -->
-    <button id="displayRecklessListButton" style="display:none;">Display Reckless List</button>
-    
-    <!-- Video player element -->
-    <video id="videoPlayer" controls>
-        Your browser does not support the video tag.
-    </video>
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>RRR Project - Select Video</title>
+    <link rel="stylesheet" href="/Users/ayushma/Desktop/PROJECT/my-electron-app/style.css" />
+  </head>
+  <body>
+    <div class="container">
+      <h1>RRR PROJECT</h1>
+      <button id="uploadButton">Select Video</button>
+      <input type="file" id="fileInput" accept="video/*" style="display: none;" />
+      <div id="status"></div>
+      <button id="displayAnalysisButton" style="display: none">Display Analysis</button>
+    </div>
 
     <script>
-        const { ipcRenderer } = require('electron');
+      const { ipcRenderer } = require("electron");
 
-        document.getElementById('selectVideoButton').addEventListener('click', async () => {
-            const filePaths = await ipcRenderer.invoke('dialog:openFile');
-            console.log('File paths:', filePaths);
-            // Additional logic here if necessary
-        });
+      document.getElementById("uploadButton").addEventListener("click", async () => {
+        const uploadButton = document.getElementById("uploadButton");
+        uploadButton.innerText = "Please Wait...";
 
-        ipcRenderer.on('analysis:finished', (event, outputPath) => {
-            console.log('Analysis finished. Output path:', outputPath);
+        const filePaths = await ipcRenderer.invoke("dialog:openFile");
 
-            // Set status to show analysis is complete
-            document.getElementById('status').innerText = 'Finished analysis!';
+        if (filePaths && filePaths.length > 0) {
+          console.log("File paths:", filePaths);
+          document.getElementById("status").innerText = "Processing selected file...";
+        } else {
+          console.error("No file selected.");
+          uploadButton.innerText = "Select Video";
+        }
+      });
 
-            // Show the "Display Analysis" button
-            const displayButton = document.getElementById('displayAnalysisButton');
-            displayButton.style.display = 'block';
+      ipcRenderer.on("analysis:finished", (event, outputPath) => {
+        console.log("Analysis finished. Output path:", outputPath);
 
-            // Show the video player
-            const videoPlayer = document.getElementById('videoPlayer');
-            videoPlayer.style.display = 'block';
-            videoPlayer.src = outputPath; // Set the source to the processed video
+        const uploadButton = document.getElementById("uploadButton");
 
-            // Play the video when the analysis button is clicked
-            displayButton.onclick = () => {
-                videoPlayer.play();
-            };
+        if (outputPath) {
+          document.getElementById("status").innerText = "Finished analysis!";
+          uploadButton.innerText = "Finished Analysis";
+          uploadButton.disabled = true;
 
-            // Show the "Display Reckless List" button
-            const recklessListButton = document.getElementById('displayRecklessListButton');
-            recklessListButton.style.display = 'block';
+          // Hide the upload button after 3 seconds
+          setTimeout(() => {
+            uploadButton.style.display = "none";
+            const displayButton = document.getElementById("displayAnalysisButton");
+            displayButton.style.display = "block";
+          }, 3000);
 
-            // Redirect to reckless.html when the button is clicked
-            recklessListButton.onclick = () => {
-                console.log('Redirecting to reckless.html');
-                window.location.href = 'reckless.html';
-            };
-        });
+          const displayButton = document.getElementById("displayAnalysisButton");
+          displayButton.onclick = () => {
+            window.location.href = `playvideo.html?videoPath=${encodeURIComponent(outputPath)}`;
+          };
+        } else {
+          console.error("Invalid output path.");
+          document.getElementById("status").innerText = "Error: Invalid output path.";
+          uploadButton.innerText = "Select Video";
+        }
+      });
     </script>
-</body>
+  </body>
 </html>

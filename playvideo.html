@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>RRR Project - Play Video</title>
+  <link rel="stylesheet" href="./playvideo.css" />
+</head>
+<body>
+  <div class="container">
+    <video id="videoPlayer" controls>Your browser does not support the video tag.</video>
+    <div>
+      <button id="recklessListButton">Display Reckless List</button>
+      <button id="homeButton">Home</button>
+    </div>
+  </div>
+
+  <script>
+    // Extract video path from URL
+    const urlParams = new URLSearchParams(window.location.search);
+    const videoPath = urlParams.get("videoPath");
+
+    if (videoPath) {
+      const videoPlayer = document.getElementById("videoPlayer");
+      videoPlayer.src = decodeURIComponent(videoPath);
+      videoPlayer.play();
+    } else {
+      console.error("No video path provided.");
+    }
+
+    // Redirect to reckless.html
+    document.getElementById("recklessListButton").onclick = () => {
+      window.location.href = "reckless.html";
+    };
+
+    // Redirect to home page
+    document.getElementById("homeButton").onclick = () => {
+      window.location.href = "index.html"; // Replace "index.html" with your home page file name
+    };
+  </script>
+</body>
+</html>

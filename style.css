@@ -1,0 +1,81 @@
+body {
+    margin: 0;
+    font-family: 'Georgia', serif;
+    background: url('/Users/ayushma/Desktop/PROJECT/my-electron-app/assets/images/prot1.jpg') no-repeat center center fixed;
+    background-size: cover;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+   
+}
+
+.container {
+    width: 100vw;
+    height: 100vh;
+    text-align: center;
+    background-color: rgba(0, 0, 0, 0.6); /* Adds a dark transparent box */
+    padding: 20px;
+    border-radius: 10px;
+    
+}
+
+h1 {
+    color: #ffffff;
+    font-size: 2rem;
+    margin-bottom: 20px;
+    text-shadow: 2px 2px 5px rgba(0, 0, 0, 0.5);
+    font-weight: lighter;
+    letter-spacing: 2px;
+}
+
+#uploadButton {
+    margin-top: 20rem;
+    width: 50rem;
+    height: 5rem;
+    padding: 15px 30px;
+    font-size: 2.5rem;
+    color: #ffffff;
+    background-color: #08202b;
+    border: none;
+    border-radius: 50px;
+    cursor: pointer;
+    box-shadow: 2px 2px 92px  rgba(255, 255, 255, 0.9);
+    transition: transform 0.2s, background-color 0.2s;
+    font-family: 'Georgia', serif;
+}
+
+#uploadButton:hover {
+    background-color: #01080b;
+    transform: scale(1.1);
+}
+
+#uploadButton:active {
+    transform: scale(1);
+}
+
+#displayAnalysisButton{
+    margin-top: 20rem;
+    margin-left: 20rem;
+    width: 50rem;
+    height: 5rem;
+    padding: 15px 30px;
+    font-size: 2.5rem;
+    color: #ffffff;
+    background-color: #08202b;
+    border: none;
+    border-radius: 50px;
+    cursor: pointer;
+    box-shadow: 2px 2px 92px  rgba(255, 255, 255, 0.9);
+    transition: transform 0.2s, background-color 0.2s;
+    font-family: 'Georgia', serif;
+}
+
+#displayAnalysisButton{
+    background-color: #01080b;
+    transform: scale(1.1);
+}
+
+#displayAnalysisButton{
+    transform: scale(1);
+}
