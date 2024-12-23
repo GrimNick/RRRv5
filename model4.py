@@ -5,6 +5,8 @@ import numpy as np
 import time
 from openpyxl import Workbook
 import sys
+import os
+import subprocess
 
 # Load the pre-trained YOLOv8 model
 model = YOLO('yolo11n.pt')
@@ -205,6 +207,13 @@ def process_video(video_path):
     # Print message to indicate completion
     print("Processing complete", flush=True)  # This will output to stdout
 
+# now run modelExcel.py
+    print("video processing complete.runninig modelExcel.py...")
+   # Pass the full path to the generated Excel file
+    full_output_file_path = os.path.join(output_path, output_file_name)
+   
+   # Run modelExcel.py with the full file path
+    subprocess.run([sys.executable, 'modelExcel.py', full_output_file_path])  # You can modify the path of modelExcel.py as needed 
 
 if __name__ == "__main__":
     if len(sys.argv) > 1:
@@ -215,5 +224,5 @@ if __name__ == "__main__":
 
 
 # Set the video path and process the video
-video_path = 'E:/Videoo/track2.mp4'  # Replace with your video path
-process_video(video_path)
+#video_path = 'E:/Videoo/track2.mp4'  # Replace with your video path
+#process_video(video_path)

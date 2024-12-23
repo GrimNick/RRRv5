@@ -3,7 +3,7 @@ import os
 import sys
 
 # Path of the input Excel file
-input_path = r'E://Videoo//track2_processed_data.xlsx'
+input_path = sys.argv[1]
 
 # Extract directory and file name to construct the output path
 directory, filename = os.path.split(input_path)
