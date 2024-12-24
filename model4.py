@@ -7,6 +7,7 @@ from openpyxl import Workbook
 import sys
 import os
 import subprocess
+import pandas as pd  # Import pandas for interpolation
 
 # Load the pre-trained YOLOv8 model
 model = YOLO('yolo11n.pt')
@@ -123,7 +124,8 @@ def process_video(video_path):
     output_file_name = output_path.replace('.mp4', '_data.xlsx')
     wb = Workbook()
     frame_count = 0
-
+    camera_height= 13
+    camera_angle= -52
     # Get the total number of frames
     total_frames = int(cap.get(cv2.CAP_PROP_FRAME_COUNT))
     
@@ -152,9 +154,15 @@ def process_video(video_path):
 
         timestamp = format_timestamp(frame_count, fps)
 
+        velocity_data = []  # Store the velocity for interpolation
+
         for track_id, kf in tracks.items():
             pred_x, pred_y = kf.state[:2]
-            velocity = max(np.linalg.norm(kf.state[2:]) - 0.5, 0)
+            velocity = np.linalg.norm(kf.state[2:])
+            scaled_velocity = velocity / (np.cos(np.radians(camera_angle)) * camera_height)
+            velocity = max(scaled_velocity - 0.5, 0)
+
+            velocity_data.append((timestamp, track_id, velocity))
 
             sheet_name = f'Track ID {track_id}'
             if sheet_name not in wb.sheetnames:
@@ -162,6 +170,7 @@ def process_video(video_path):
                 ws.append(["Time", "Velocity", "Relative Velocity"])
             else:
                 ws = wb[sheet_name]
+            
             relative_velocity = max(np.mean([np.linalg.norm(other_kf.state[2:]) for other_id, other_kf in tracks.items() if other_id != track_id]), 0)
             ws.append([timestamp, velocity, relative_velocity])
 
@@ -174,11 +183,26 @@ def process_video(video_path):
                     cv2.putText(frame, label, (x1, y1 - 10), cv2.FONT_HERSHEY_SIMPLEX, 0.5, color, 2)
                     break
 
+        # Interpolate missing velocity values
+        velocity_df = pd.DataFrame(velocity_data, columns=["Time", "Track ID", "Velocity"])
+        velocity_df['Velocity'] = velocity_df['Velocity'].replace(0, np.nan)  # Replace 0 with NaN for interpolation
+        velocity_df['Velocity'] = velocity_df['Velocity'].interpolate(method='linear')  # Apply interpolation
+        
+        # Re-append interpolated velocities back to the Excel sheet
+        for _, row in velocity_df.iterrows():
+            track_id = int(row["Track ID"])
+            timestamp = row["Time"]
+            velocity = row["Velocity"]
+            sheet_name = f'Track ID {track_id}'
+            ws = wb[sheet_name]
+            relative_velocity = max(np.mean([np.linalg.norm(other_kf.state[2:]) for other_id, other_kf in tracks.items() if other_id != track_id]), 0)
+            ws.append([timestamp, velocity, relative_velocity])
+
         out.write(frame)
         frame_count += 1
         Percentage_completed = (frame_count / total_frames) * 100
         if frame_count % 10 == 0:  # Reduce verbosity
-         print(f"Processing frame {frame_count}/{total_frames} - {Percentage_completed:.2f}% completed", flush= True)
+         print(f"Processing frame {frame_count}/{total_frames} - {Percentage_completed:.2f}% completed", flush=True)
 
     cap.release()
     out.release()

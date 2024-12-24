@@ -26,6 +26,9 @@ for sheet_name in excel_data.sheet_names:
 
     # Check if the necessary columns exist
     if 'Time' in df.columns and 'Velocity' in df.columns and 'Relative Velocity' in df.columns:
+        # Interpolate missing velocities (NaN) using linear interpolation
+        df['Velocity'] = df['Velocity'].interpolate(method='linear', limit_direction='forward', axis=0)
+        
         # Check for duplicates in 'Time' column
         duplicates = df[df.duplicated('Time', keep=False)]
         
@@ -48,16 +51,13 @@ for sheet_name in excel_data.sheet_names:
     # Store the processed DataFrame in the output_data dictionary
     output_data[sheet_name] = df_processed
 
-
-
 # Write the processed sheets to a new Excel file
 with pd.ExcelWriter(output_path) as writer:
     for sheet_name, df_processed in output_data.items():
         df_processed.to_excel(writer, sheet_name=sheet_name, index=False)
 
-  
-
 print(f"New Excel file created at: {output_path}", flush=True)
 print("Processing complete", flush=True)
 
+# Run the next step with the updated file path
 subprocess.run([sys.executable, 'modelKmPerHour.py', output_path])  # You can modify the path of modelExcel.py as needed

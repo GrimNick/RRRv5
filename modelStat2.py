@@ -46,13 +46,12 @@ for sheet_name, df in sheets.items():
     flag_kurtosis = 1 if kurtosis and kurtosis < 10 else 0
     flag_peak_to_peak = 1 if peak_to_peak and peak_to_peak > 40 else 0
     flag_comparison_mean = 1 if comparison_mean and comparison_mean > 10 else 0
-    
     # Calculate total flag as the sum of all individual flags
     total_flag = (
         flag_std_dev + flag_mean_velocity + flag_variance +
         flag_skewness + flag_kurtosis + flag_peak_to_peak + flag_comparison_mean
     )
-
+    flag_reckless_status ='Yes' if total_flag>=3 else 'No'
     # Add all values to the summary entry
     summary_entry = {
         "Track ID": track_id,
@@ -70,7 +69,8 @@ for sheet_name, df in sheets.items():
         "Flag Kurtosis": flag_kurtosis,
         "Flag Peak-to-Peak": flag_peak_to_peak,
         "Flag Comparison Mean": flag_comparison_mean,
-        "Total Flag": total_flag
+        "Total Flag": total_flag,
+        "Reckless Status": flag_reckless_status
     }
     
     # Append the entry to the summary list
