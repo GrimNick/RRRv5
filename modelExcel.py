@@ -1,9 +1,10 @@
 import pandas as pd
 import os
 import sys
+import subprocess
 
 # Path of the input Excel file
-input_path = sys.argv[1]
+input_path = sys.argv[1] 
 
 # Extract directory and file name to construct the output path
 directory, filename = os.path.split(input_path)
@@ -47,10 +48,16 @@ for sheet_name in excel_data.sheet_names:
     # Store the processed DataFrame in the output_data dictionary
     output_data[sheet_name] = df_processed
 
+
+
 # Write the processed sheets to a new Excel file
 with pd.ExcelWriter(output_path) as writer:
     for sheet_name, df_processed in output_data.items():
         df_processed.to_excel(writer, sheet_name=sheet_name, index=False)
 
+  
+
 print(f"New Excel file created at: {output_path}", flush=True)
 print("Processing complete", flush=True)
+
+subprocess.run([sys.executable, 'modelKmPerHour.py', output_path])  # You can modify the path of modelExcel.py as needed

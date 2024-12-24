@@ -112,8 +112,8 @@ def process_video(video_path):
 
     cap = cv2.VideoCapture(video_path)
 
-    # Use H.264 codec for better compatibility with HTML5
-    fourcc = cv2.VideoWriter_fourcc(*'avc1')  # H.264 codec
+    # Use 'mp4v' codec for better macOS compatibility
+    fourcc = cv2.VideoWriter_fourcc(*'mp4v')
     output_path = video_path.replace('.mp4', '_processed.mp4')
     fps = cap.get(cv2.CAP_PROP_FPS)
     width = int(cap.get(cv2.CAP_PROP_FRAME_WIDTH))
@@ -123,6 +123,9 @@ def process_video(video_path):
     output_file_name = output_path.replace('.mp4', '_data.xlsx')
     wb = Workbook()
     frame_count = 0
+
+    # Get the total number of frames
+    total_frames = int(cap.get(cv2.CAP_PROP_FRAME_COUNT))
     
     motorbike_class_id = None
     for key, value in model.names.items():
@@ -150,79 +153,45 @@ def process_video(video_path):
         timestamp = format_timestamp(frame_count, fps)
 
         for track_id, kf in tracks.items():
-            # Extract predicted position (x, y)
             pred_x, pred_y = kf.state[:2]
+            velocity = max(np.linalg.norm(kf.state[2:]) - 0.5, 0)
 
-            # Calculate the velocity from the Kalman filter state (assuming state [x, y, vx, vy])
-            velocity = np.linalg.norm(kf.state[2:])
-
-            # Subtract 0.5 for noise calculation
-            velocity -= 0.5
-
-            # Reset velocity to 0 if it is below 0
-            if velocity < 0:
-                velocity = 0
-
-            relative_velocity = 0
-
-            # Compute relative velocity if there are other tracks
-            if len(tracks) > 1:
-                velocities = [np.linalg.norm(other_kf.state[2:]) for other_id, other_kf in tracks.items() if other_id != track_id]
-                relative_velocity = np.mean(velocities) if velocities else 0
-
-            # Define the sheet name for the current track ID
             sheet_name = f'Track ID {track_id}'
-
-            # Check if the sheet already exists; if not, create it
             if sheet_name not in wb.sheetnames:
                 ws = wb.create_sheet(sheet_name)
                 ws.append(["Time", "Velocity", "Relative Velocity"])
             else:
                 ws = wb[sheet_name]
-
-            # Append the current timestamp, velocity, and relative velocity to the sheet
+            relative_velocity = max(np.mean([np.linalg.norm(other_kf.state[2:]) for other_id, other_kf in tracks.items() if other_id != track_id]), 0)
             ws.append([timestamp, velocity, relative_velocity])
 
-            # Drawing bounding boxes and labels
             for (center_x, center_y, class_id), box in zip(detected_objects, results[0].boxes):
                 if abs(pred_x - center_x) < 50 and abs(pred_y - center_y) < 50:
                     x1, y1, x2, y2 = map(int, box.xyxy[0])
                     color = (0, 255, 0) if class_id != motorbike_class_id else (0, 255, 0)
                     label = f'ID: {track_id}'
-
-                    # Draw rectangle and label
                     cv2.rectangle(frame, (x1, y1), (x2, y2), color=color, thickness=2)
                     cv2.putText(frame, label, (x1, y1 - 10), cv2.FONT_HERSHEY_SIMPLEX, 0.5, color, 2)
                     break
 
         out.write(frame)
         frame_count += 1
+        Percentage_completed = (frame_count / total_frames) * 100
+        if frame_count % 10 == 0:  # Reduce verbosity
+         print(f"Processing frame {frame_count}/{total_frames} - {Percentage_completed:.2f}% completed", flush= True)
 
     cap.release()
     out.release()
     wb.save(output_file_name)
     wb.close()
-   
 
-    # Print message to indicate completion
-    print("Processing complete", flush=True)  # This will output to stdout
-
-# now run modelExcel.py
-    print("video processing complete.runninig modelExcel.py...")
-   # Pass the full path to the generated Excel file
-    full_output_file_path = os.path.join(output_path, output_file_name)
-   
-   # Run modelExcel.py with the full file path
-    subprocess.run([sys.executable, 'modelExcel.py', full_output_file_path])  # You can modify the path of modelExcel.py as needed 
+    print("Processing complete.", flush=True)
+    full_output_file_path = os.path.abspath(output_file_name)
+    subprocess.run([sys.executable, 'modelExcel.py', full_output_file_path])
 
 if __name__ == "__main__":
     if len(sys.argv) > 1:
-        video_path = sys.argv[1]  # Get the video path from the command line arguments
+        video_path = sys.argv[1]
         process_video(video_path)
     else:
         print("No video path provided.")
-
-
-# Set the video path and process the video
-#video_path = 'E:/Videoo/track2.mp4'  # Replace with your video path
-#process_video(video_path)
