@@ -113,7 +113,7 @@ def process_video(video_path):
     cap = cv2.VideoCapture(video_path)
 
     # Use 'mp4v' codec for better macOS compatibility
-    fourcc = cv2.VideoWriter_fourcc(*'mp4v')
+    fourcc = cv2.VideoWriter_fourcc(*'avc1')
     output_path = video_path.replace('.mp4', '_processed.mp4')
     fps = cap.get(cv2.CAP_PROP_FPS)
     width = int(cap.get(cv2.CAP_PROP_FRAME_WIDTH))
