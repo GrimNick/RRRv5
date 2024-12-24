@@ -5,7 +5,6 @@ import subprocess
 
 # Path of the input Excel file
 input_path = sys.argv[1] 
-
 # Extract directory and file name to construct the output path
 directory, filename = os.path.split(input_path)
 file_root, file_ext = os.path.splitext(filename)
@@ -28,6 +27,9 @@ for sheet_name in excel_data.sheet_names:
     if 'Time' in df.columns and 'Velocity' in df.columns and 'Relative Velocity' in df.columns:
         # Interpolate missing velocities (NaN) using linear interpolation
         df['Velocity'] = df['Velocity'].interpolate(method='linear', limit_direction='forward', axis=0)
+        
+        # Fill NaN values in 'Relative Velocity' with corresponding 'Velocity' values
+        df['Relative Velocity'] = df['Relative Velocity'].fillna(df['Velocity'])
         
         # Check for duplicates in 'Time' column
         duplicates = df[df.duplicated('Time', keep=False)]

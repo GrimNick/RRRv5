@@ -14,8 +14,8 @@ file_root, file_ext = os.path.splitext(filename)
 output_path = os.path.join(directory, f"{file_root[:-1]}3{file_ext}")    
 
 # Constants for the road dimensions in meters
-horizontal_road_length = 10  # in meters
-vertical_road_length = 10    # in meters
+horizontal_road_length = 8.41 # in meters
+vertical_road_length = 68.3    # in meters
 
 # Open the input Excel file
 excel_data = pd.ExcelFile(input_path)
@@ -29,7 +29,7 @@ for sheet_name in excel_data.sheet_names:
     df = excel_data.parse(sheet_name)
 
     # Check if the DataFrame has 5 or more rows
-    if len(df) < 5:
+    if len(df) < 3:
         # Skip sheets with fewer than 5 rows
         print(f"Sheet '{sheet_name}' has less than 5 rows and will be skipped.")
         continue
