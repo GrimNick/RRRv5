@@ -1,9 +1,16 @@
 import pandas as pd
 import openpyxl
+import os 
+import sys
 
 # Define input and output file paths
-input_excel_path = r"E:\Videoo\track2_processed_data3_output.xlsx"
-output_summary_path = r"E:\Videoo\track2_summary_with_flags_sorted.xlsx"
+input_excel_path = sys.argv[1]
+
+# Extract directory and file name to construct the output path
+directory, filename = os.path.split(input_excel_path)
+file_root, file_ext = os.path.splitext(filename)
+output_summary_path = os.path.join(directory, f"{file_root[:-1]}5{file_ext}")
+
 
 # Load all sheets from the input Excel file
 sheets = pd.read_excel(input_excel_path, sheet_name=None, engine='openpyxl')

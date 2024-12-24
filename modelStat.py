@@ -2,10 +2,18 @@ import pandas as pd
 import numpy as np
 from scipy.stats import skew, kurtosis
 import openpyxl
+import sys
+import os
+import subprocess
 
 # Define input and output file paths
-input_excel_path = r"E:\Videoo\track2_processed_data3.xlsx"
-output_excel_path = r"E:\Videoo\track2_processed_data3_output.xlsx"
+input_excel_path = sys.argv[1]
+
+# Extract directory and file name to construct the output path
+directory, filename = os.path.split(input_excel_path)
+file_root, file_ext = os.path.splitext(filename)
+output_excel_path = os.path.join(directory, f"{file_root[:-1]}4{file_ext}")
+
 
 # Load all sheets from the original Excel file
 sheets = pd.read_excel(input_excel_path, sheet_name=None, engine='openpyxl')
@@ -59,3 +67,9 @@ with pd.ExcelWriter(output_excel_path, engine='openpyxl') as writer:
         df_combined.to_excel(writer, sheet_name=sheet_name, index=False)
 
     print("Calculated parameters and comments have been saved to the output Excel file.")
+
+
+subprocess.run([sys.executable, 'modelStat2.py',  output_excel_path]) # You can modify the path of modelExcel.py as needed
+
+
+
