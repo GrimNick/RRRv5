@@ -4,59 +4,149 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Reckless Vehicle Analysis</title>
-    <style>
-        #output {
-            white-space: pre-wrap;
-            font-family: monospace;
-            background-color: #f0f0f0;
-            padding: 20px;
-            border-radius: 5px;
-            max-width: 100%;
-            max-height: 400px;
-            overflow-y: auto;
-        }
-        button {
-            margin-top: 20px;
-            padding: 10px;
-            background-color: #28a745;
-            color: white;
-            border: none;
-            border-radius: 5px;
-            cursor: pointer;
-        }
-    </style>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="./reckless.css" />
 </head>
 <body>
     <h1>Reckless Vehicle Analysis</h1>
-    <div id="output">Console output will appear here...</div>
-    <button id="runVideoAnalysisButton">Run Video Analysis</button>
-    <button id="runExcelAnalysisButton">Run Excel Analysis</button>
+    <div id="backToHome" style="display:flex; align-items:center; gap:5px; cursor: pointer;">
+        <div class="tooltip-container">
+            <i id="returnHome" class="fa-solid fa-house-chimney" style="font-size: 34px; color: rgb(22, 14, 68);"></i>
+            <span class="tooltip">Go to Home</span>
+        </div>
+        <div class="tooltip-container">
+            <i id="returnToVideo" class="fa-solid fa-desktop" style="font-size: 34px; color: rgb(22, 14, 68);"></i>
+            <span class="tooltip">Go to Video</span>
+        </div>
+        <div class="tooltip-container">
+            <i id="exitApp" class="fa-solid fa-right-from-bracket" style="font-size: 34px; color: rgb(22, 14, 68);"></i>
+            <span class="tooltip">Exit</span>
+        </div>
+    </div>
+
+    <table id="data-table" border="1" style="margin-top: 20px; border-collapse: collapse; width: 100%;">
+        <thead>
+            <tr>
+                <th>Time</th>
+                <th>Velocity</th>
+                <th>Relative Velocity</th>
+            </tr>
+        </thead>
+        <tbody>
+            <!-- Rows will be populated dynamically -->
+        </tbody>
+    </table>
+
+    <div class="console-data" id="output" style="margin-top: 20px; background-color: #f9f9f9; padding: 10px; border: 1px solid #ddd; max-height: 200px; overflow-y: auto;">Console output will appear here...</div>
 
     <script>
-        const { ipcRenderer } = require('electron');
+        document.addEventListener('DOMContentLoaded', () => {
+            // Retrieve the Excel path from sessionStorage
+            const excelPath = sessionStorage.getItem('excelPath');
+            
+            if (excelPath) {
+                logToConsole(`Excel file path retrieved: ${excelPath}`);
+                fetchAndDisplayExcel(excelPath);
+            } else {
+                logToConsole("No Excel file path found in sessionStorage.");
+            }
+        });
+
+        function fetchAndDisplayExcel(excelPath) {
+            fetch(excelPath)
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error(`Error fetching Excel file: ${response.statusText}`);
+                    }
+                    return response.arrayBuffer();
+                })
+                .then(data => {
+                    const workbook = XLSX.read(data, { type: 'array' });
+                    const sheetName = workbook.SheetNames[0];
+                    logToConsole(`Sheet name: ${sheetName}`);
+
+                    const sheet = workbook.Sheets[sheetName];
+                    const jsonData = XLSX.utils.sheet_to_json(sheet, { header: 1 });
+                    populateTable(jsonData);
+                })
+                .catch(error => {
+                    logToConsole(`Error: ${error.message}`);
+                });
+        }
+
+        function populateTable(data) {
+            const tableBody = document.querySelector('#data-table tbody');
+            tableBody.innerHTML = '';
+
+            if (data.length > 1) {
+                const headers = data[0];
+                const columnIndexes = {
+                    time: headers.findIndex(header => header.trim().toLowerCase() === 'time'),
+                    velocity: headers.findIndex(header => header.trim().toLowerCase() === 'velocity'),
+                    relativeVelocity: headers.findIndex(header => header.trim().toLowerCase() === 'relative velocity'),
+                };
+
+                if (columnIndexes.time === -1 || columnIndexes.velocity === -1 || columnIndexes.relativeVelocity === -1) {
+                    logToConsole("Error: The Excel file must contain 'Time', 'Velocity', and 'Relative Velocity' columns.");
+                    return;
+                }
+
+                for (let i = 1; i < data.length; i++) {
+                    const row = data[i];
+                    const tableRow = document.createElement('tr');
+
+                    const timeCell = document.createElement('td');
+                    timeCell.textContent = row[columnIndexes.time] || 'N/A';
+                    tableRow.appendChild(timeCell);
+
+                    const velocityCell = document.createElement('td');
+                    velocityCell.textContent = row[columnIndexes.velocity] || 'N/A';
+                    tableRow.appendChild(velocityCell);
+
+                    const relativeVelocityCell = document.createElement('td');
+                    relativeVelocityCell.textContent = row[columnIndexes.relativeVelocity] || 'N/A';
+                    tableRow.appendChild(relativeVelocityCell);
+
+                    tableBody.appendChild(tableRow);
+                }
+
+                logToConsole('Table populated with data.');
+            } else {
+                logToConsole("Error: No data found in the Excel file.");
+            }
+        }
 
         function logToConsole(message) {
             const outputDiv = document.getElementById('output');
-            outputDiv.textContent += message + '\n';
+            const logMessage = document.createElement('p');
+            logMessage.textContent = message;
+            outputDiv.appendChild(logMessage);
             outputDiv.scrollTop = outputDiv.scrollHeight;
         }
 
-        // Trigger video analysis
-        document.getElementById('runVideoAnalysisButton').addEventListener('click', () => {
-            logToConsole('Starting video analysis...');
-            ipcRenderer.invoke('run-model-video');
-        });
+        document.getElementById("returnHome").onclick = () => {
+            window.location.href = "index.html";
+        };
 
-        // Trigger Excel analysis
-        document.getElementById('runExcelAnalysisButton').addEventListener('click', () => {
-            logToConsole('Starting Excel analysis...');
-            ipcRenderer.invoke('run-model-excel');
-        });
+        document.getElementById("returnToVideo").onclick = () => {
+            const videoPath = sessionStorage.getItem('videoPath');
+            if (videoPath) {
+                sessionStorage.setItem("videoPath", videoPath);
+            }
+            window.location.href = "playvideo.html";
+        };
+        document.getElementById("exitApp").onclick = () => {
+         if (typeof require !== "undefined") {
+        const { ipcRenderer } = require("electron");
+        ipcRenderer.send("close-app"); // Sends the event to the main process
+         } else {
+        console.error("Exit is only supported in a desktop environment like Electron.");
+         }
+};
 
-        // Display output messages
-        ipcRenderer.on('model-output', (event, message) => {
-            logToConsole(message);
-        });
+
+      
     </script>
+    <script src="https://cdn.jsdelivr.net/npm/xlsx/dist/xlsx.full.min.js"></script>
 </body>
 </html>
