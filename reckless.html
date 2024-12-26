@@ -13,16 +13,25 @@
         <div class="tooltip-container">
             <i id="returnHome" class="fa-solid fa-house-chimney" style="font-size: 34px; color: rgb(22, 14, 68);"></i>
             <span class="tooltip">Go to Home</span>
-        </div>
-        <div class="tooltip-container">
+          </div>
+          <div class="tooltip-container">
             <i id="returnToVideo" class="fa-solid fa-desktop" style="font-size: 34px; color: rgb(22, 14, 68);"></i>
-            <span class="tooltip">Go to Video</span>
-        </div>
-        <div class="tooltip-container">
+            <span class="tooltip">Go to video</span>
+          </div>
+          <div class="tooltip-container">
             <i id="exitApp" class="fa-solid fa-right-from-bracket" style="font-size: 34px; color: rgb(22, 14, 68);"></i>
             <span class="tooltip">Exit</span>
-        </div>
+          </div>
+        
     </div>
+
+    <!-- File input for uploading Excel -->
+    <label for="excelFileInput" class="Btn">
+        <div class="sign">+</div>
+        <div class="text">Upload</div>
+      </label>
+      <input type="file" id="excelFileInput" accept=".xlsx, .xls" style="display: none;" />
+      
 
     <table id="data-table" border="1" style="margin-top: 20px; border-collapse: collapse; width: 100%;">
         <thead>
@@ -40,39 +49,38 @@
     <div class="console-data" id="output" style="margin-top: 20px; background-color: #f9f9f9; padding: 10px; border: 1px solid #ddd; max-height: 200px; overflow-y: auto;">Console output will appear here...</div>
 
     <script>
-        document.addEventListener('DOMContentLoaded', () => {
-            // Retrieve the Excel path from sessionStorage
-            const excelPath = sessionStorage.getItem('excelPath');
-            
-            if (excelPath) {
-                logToConsole(`Excel file path retrieved: ${excelPath}`);
-                fetchAndDisplayExcel(excelPath);
+        // Use Electron's require to load XLSX
+        const XLSX = require('xlsx');
+
+        // Handle Excel file input
+        document.getElementById('excelFileInput').addEventListener('change', (event) => {
+            const file = event.target.files[0];
+            if (file) {
+                logToConsole(`File selected: ${file.name}`);
+
+                const reader = new FileReader();
+                reader.onload = (e) => {
+                    try {
+                        logToConsole('File is being read...');
+                        const data = new Uint8Array(e.target.result);
+                        const workbook = XLSX.read(data, { type: 'array' });
+                        const sheetName = workbook.SheetNames[0];
+                        logToConsole(`Sheet name: ${sheetName}`);
+
+                        const sheet = workbook.Sheets[sheetName];
+                        const jsonData = XLSX.utils.sheet_to_json(sheet, { header: 1 });
+                        logToConsole('Parsed data:', jsonData);
+
+                        populateTable(jsonData);
+                    } catch (err) {
+                        logToConsole(`Error reading file: ${err.message}`);
+                    }
+                };
+                reader.readAsArrayBuffer(file);
             } else {
-                logToConsole("No Excel file path found in sessionStorage.");
+                logToConsole('No file selected.');
             }
         });
-
-        function fetchAndDisplayExcel(excelPath) {
-            fetch(excelPath)
-                .then(response => {
-                    if (!response.ok) {
-                        throw new Error(`Error fetching Excel file: ${response.statusText}`);
-                    }
-                    return response.arrayBuffer();
-                })
-                .then(data => {
-                    const workbook = XLSX.read(data, { type: 'array' });
-                    const sheetName = workbook.SheetNames[0];
-                    logToConsole(`Sheet name: ${sheetName}`);
-
-                    const sheet = workbook.Sheets[sheetName];
-                    const jsonData = XLSX.utils.sheet_to_json(sheet, { header: 1 });
-                    populateTable(jsonData);
-                })
-                .catch(error => {
-                    logToConsole(`Error: ${error.message}`);
-                });
-        }
 
         function populateTable(data) {
             const tableBody = document.querySelector('#data-table tbody');
@@ -129,24 +137,16 @@
         };
 
         document.getElementById("returnToVideo").onclick = () => {
-            const videoPath = sessionStorage.getItem('videoPath');
-            if (videoPath) {
-                sessionStorage.setItem("videoPath", videoPath);
-            }
-            window.location.href = "playvideo.html";
-        };
-        document.getElementById("exitApp").onclick = () => {
-         if (typeof require !== "undefined") {
-        const { ipcRenderer } = require("electron");
-        ipcRenderer.send("close-app"); // Sends the event to the main process
-         } else {
-        console.error("Exit is only supported in a desktop environment like Electron.");
-         }
-};
+        // Save video path to sessionStorage
+        const videoPlayer = document.getElementById("videoPlayer");
+        if (videoPlayer) {
+            const videoPath = videoPlayer.src;
+            sessionStorage.setItem("videoPath", videoPath);
+        }
 
-
-      
+        // Navigate to playvideo.html
+        window.location.href = "playvideo.html";
+        }
     </script>
-    <script src="https://cdn.jsdelivr.net/npm/xlsx/dist/xlsx.full.min.js"></script>
 </body>
 </html>
