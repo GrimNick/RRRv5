@@ -1,8 +1,6 @@
 import pandas as pd
 import os
 import sys
-import subprocess
-
 # Path of the input Excel file (the one with '2' in its name)
 input_path = sys.argv[1]
 
@@ -11,11 +9,11 @@ directory, filename = os.path.split(input_path)
 file_root, file_ext = os.path.splitext(filename)
 
 # Replace '2' with '3' in the filename
-output_path = os.path.join(directory, f"{file_root[:-1]}3{file_ext}")    
+output_path = os.path.join(directory, f"{file_root[:-1]}3{file_ext}")
 
 # Constants for the road dimensions in meters
-horizontal_road_length = 8.41 # in meters
-vertical_road_length = 68.3    # in meters
+horizontal_road_length = 10  # in meters
+vertical_road_length = 10    # in meters
 
 # Open the input Excel file
 excel_data = pd.ExcelFile(input_path)
@@ -29,7 +27,7 @@ for sheet_name in excel_data.sheet_names:
     df = excel_data.parse(sheet_name)
 
     # Check if the DataFrame has 5 or more rows
-    if len(df) < 3:
+    if len(df) < 5:
         # Skip sheets with fewer than 5 rows
         print(f"Sheet '{sheet_name}' has less than 5 rows and will be skipped.")
         continue
@@ -73,5 +71,3 @@ with pd.ExcelWriter(output_path) as writer:
         df.to_excel(writer, sheet_name=sheet_name, index=False)
 
 print(f"New Excel file created at: {output_path}")
-
-subprocess.run([sys.executable, 'modelStat.py', output_path]) # You can modify the path of modelExcel.py as needed
