@@ -2,6 +2,7 @@ import pandas as pd
 import openpyxl
 import os 
 import sys
+import subprocess
 
 # Define input and output file paths
 input_excel_path = sys.argv[1]
@@ -108,3 +109,6 @@ for column in worksheet.columns:
 workbook.save(output_summary_path)
 
 print("Sorted summary with flags has been saved to the output Excel file with adjusted column widths.")
+
+
+subprocess.run([sys.executable, 'modelStatPaxi.py',  output_summary_path]) 

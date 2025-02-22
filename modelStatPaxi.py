@@ -2,12 +2,17 @@ import pandas as pd
 import numpy as np
 from tensorflow.keras.models import load_model
 from sklearn.preprocessing import MinMaxScaler
-
+import os 
+import sys
 model = load_model('hamroRRR.h5')
 
-input_file = "E://Videoo//track6_processed_data5.xlsx" #shila milau
-new_all_sheets = pd.read_excel(input_file, sheet_name=None)
+input_path = sys.argv[1]
+new_all_sheets = pd.read_excel(input_path, sheet_name=None)
 
+# Extract directory and file name to construct the output path
+directory, filename = os.path.split(input_path)
+file_root, file_ext = os.path.splitext(filename)
+output_path = os.path.join(directory, f"{file_root[:-1]}6{file_ext}")
 scaler = MinMaxScaler()
 
 final_predictions = []
@@ -39,5 +44,6 @@ for sheet_name, df in new_all_sheets.items():
 predictions_df = pd.concat(final_predictions, ignore_index=True)
 
 print(predictions_df.head())
-
-predictions_df.to_excel('E://Videoo//track6_processed_data6.xlsx', index=False)
+  # Write the combined data to the output Excel file
+with pd.ExcelWriter(output_path) as writer:
+ predictions_df.to_excel(writer, sheet_name=sheet_name, index=False)
