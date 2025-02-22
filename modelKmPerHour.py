@@ -14,8 +14,8 @@ file_root, file_ext = os.path.splitext(filename)
 output_path = os.path.join(directory, f"{file_root[:-1]}3{file_ext}")    
 
 # Constants for the road dimensions in meters
-horizontal_road_length = 8.41 # in meters
-vertical_road_length = 68.3    # in meters
+horizontal_road_length = 8.41 # in meters (used for horizontal scaling)
+vertical_road_length = 68.3   # in meters (for reference, but not used for scaling)
 
 # Open the input Excel file
 excel_data = pd.ExcelFile(input_path)
@@ -28,10 +28,10 @@ for sheet_name in excel_data.sheet_names:
     # Load the sheet data into a DataFrame
     df = excel_data.parse(sheet_name)
 
-    # Check if the DataFrame has 5 or more rows
+    # Check if the DataFrame has 3 or more rows
     if len(df) < 3:
-        # Skip sheets with fewer than 5 rows
-        print(f"Sheet '{sheet_name}' has less than 5 rows and will be skipped.")
+        # Skip sheets with fewer than 3 rows
+        print(f"Sheet '{sheet_name}' has less than 3 rows and will be skipped.")
         continue
 
     # Check if the required columns exist
@@ -41,6 +41,7 @@ for sheet_name in excel_data.sheet_names:
         max_velocity = df['Velocity'].max()
         max_relative_velocity = df['Relative Velocity'].max()
 
+        # Apply scaling if max_velocity or max_relative_velocity is greater than 0
         if max_velocity > 0:
             # Convert 'Velocity' from pixels to meters (horizontal scaling)
             horizontal_scale = horizontal_road_length / max_velocity
@@ -48,21 +49,18 @@ for sheet_name in excel_data.sheet_names:
             horizontal_scale = 0  # Avoid division by zero, set a default scale
 
         if max_relative_velocity > 0:
-            # Convert 'Relative Velocity' from pixels to meters (vertical scaling)
-            vertical_scale = vertical_road_length / max_relative_velocity
+            # Convert 'Relative Velocity' from pixels to meters (same horizontal scaling)
+            vertical_scale = horizontal_scale  # Use the same scale for relative velocity
         else:
             vertical_scale = 0  # Avoid division by zero, set a default scale
         
-        # Apply scaling if scaling factors are non-zero
+        # Apply horizontal scaling for both Velocity and Relative Velocity
         if horizontal_scale > 0:
             df['Velocity'] = df['Velocity'] * horizontal_scale
         
-        if vertical_scale > 0:
-            df['Relative Velocity'] = df['Relative Velocity'] * vertical_scale
 
         # Convert from meters per second to kilometers per hour (1 m/s = 3.6 km/h)
         df['Velocity'] = df['Velocity'] * 3.6
-        df['Relative Velocity'] = df['Relative Velocity'] * 3.6
 
     # Store the DataFrame in the output_data dictionary
     output_data[sheet_name] = df
@@ -74,4 +72,5 @@ with pd.ExcelWriter(output_path) as writer:
 
 print(f"New Excel file created at: {output_path}")
 
-subprocess.run([sys.executable, 'modelStat.py', output_path]) # You can modify the path of modelExcel.py as needed
+# Run the next step with the updated file path
+subprocess.run([sys.executable, 'modelStat.py', output_path]) # Modify path as needed
