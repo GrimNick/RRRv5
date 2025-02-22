@@ -121,7 +121,7 @@ def process_video(video_path):
     cap = cv2.VideoCapture(video_path)
 
     # Use 'mp4v' codec for better macOS compatibility
-    fourcc = cv2.VideoWriter_fourcc(*'avc1')
+    fourcc = cv2.VideoWriter_fourcc(*'mp4v')
     output_path = video_path.replace('.mp4', '_processed.mp4')
     fps = cap.get(cv2.CAP_PROP_FPS)
     width = int(cap.get(cv2.CAP_PROP_FRAME_WIDTH))
@@ -135,15 +135,17 @@ def process_video(video_path):
     camera_angle = -52
     # Get the total number of frames
     total_frames = int(cap.get(cv2.CAP_PROP_FRAME_COUNT))
-    
+                                                                                              
     motorbike_class_id = None
     person_class_id = None
-
+    cow_class_id= None
     for key, value in model.names.items():
         if value in ['motorbike', 'bike', 'motorcycle']:
             motorbike_class_id = key
         if value == 'person':
             person_class_id = key
+        if value =='cow':
+            cow_class_id = key
 
     while cap.isOpened():
         ret, frame = cap.read()
@@ -158,7 +160,7 @@ def process_video(video_path):
             class_id = int(box.cls[0])
 
             # Skip detection if it's a person
-            if class_id == person_class_id:
+            if class_id == person_class_id or class_id ==cow_class_id:
                 continue
 
             center_x = (x1 + x2) // 2

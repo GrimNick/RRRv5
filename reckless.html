@@ -1,167 +1,159 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Reckless Vehicle Analysis</title>
-    <link rel="stylesheet" href="./assets/css/fontawesome.min.css">
-    <link rel="stylesheet" href="./assets/css/all.min.css">
-    <link rel="stylesheet" href="./reckless.css" />
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Reckless Vehicle Analysis</title>
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="./reckless.css" />
 </head>
 <body>
-    <h1>Reckless Vehicle Analysis</h1>
-    <div id="backToHome" style="display:flex; align-items:center; gap:5px; cursor: pointer;">
-        <div class="tooltip-container">
-            <i id="returnHome" class="fa-solid fa-house-chimney" style="font-size: 34px; color: rgb(22, 14, 68);"></i>
-            <span class="tooltip">Go to Home</span>
-        </div>
-        <div class="tooltip-container">
-            <i id="returnToVideo" class="fa-solid fa-desktop" style="font-size: 34px; color: rgb(22, 14, 68);"></i>
-            <span class="tooltip">Go to video</span>
-        </div>
-        <div class="tooltip-container">
-            <i id="exitApp" class="fa-solid fa-right-from-bracket" style="font-size: 34px; color: rgb(22, 14, 68);"></i>
-            <span class="tooltip">Exit</span>
-        </div>
+  <h1>Reckless Vehicle Analysis</h1>
+  <div id="backToHome" style="display:flex; align-items:center; gap:5px; cursor: pointer;">
+    <div class="tooltip-container">
+      <i id="returnHome" class="fa-solid fa-house-chimney" style="font-size: 34px; color: rgb(22, 14, 68);"></i>
+      <span class="tooltip">Go to Home</span>
     </div>
-
-    <!-- File input for uploading Excel -->
-    <label for="excelFileInput" class="Btn">
-        <div class="sign">+</div>
-        <div class="text">Upload</div>
-    </label>
-    <input type="file" id="excelFileInput" accept=".xlsx, .xls" style="display: none;" />
-
-    <table id="data-table" border="1" style="margin-top: 20px; border-collapse: collapse; width: 100%;">
-        <thead>
-            <tr>
-                <th>Time</th>
-                <th>Velocity</th>
-                <th>Relative Velocity</th>
-            </tr>
-        </thead>
-        <tbody>
-            <!-- Rows will be populated dynamically -->
-        </tbody>
-    </table>
-
-    <div class="console-data" id="output" style="margin-top: 20px; background-color: #f9f9f9; padding: 10px; border: 1px solid #ddd; max-height: 200px; overflow-y: auto;">
-        Console output will appear here...
+    <div class="tooltip-container">
+      <i id="returnToVideo" class="fa-solid fa-desktop" style="font-size: 34px; color: rgb(22, 14, 68);"></i>
+      <span class="tooltip">Go to Video</span>
     </div>
+    <div class="tooltip-container">
+      <i id="exitApp" class="fa-solid fa-right-from-bracket" style="font-size: 34px; color: rgb(22, 14, 68);"></i>
+      <span class="tooltip">Exit</span>
+    </div>
+  </div>
 
-    <script>
-        // Ensure Electron is available before using require
-        let XLSX;
-        if (typeof require !== "undefined") {
-            XLSX = require("xlsx");
-        } else {
-            console.error("XLSX requires Electron's Node.js environment.");
-        }
+  <label for="excelFileInput" class="Btn">
+    <div class="sign">+</div>
+    <div class="text">Upload</div>
+  </label>
+  <input type="file" id="excelFileInput" accept=".xlsx, .xls" style="display: none;" />
 
-        // Handle Excel file input
-        document.getElementById("excelFileInput").addEventListener("change", (event) => {
-            const file = event.target.files[0];
-            if (file) {
-                logToConsole(`File selected: ${file.name}`);
+  <table id="data-table" border="1" style="margin-top: 20px; border-collapse: collapse; width: 100%;">
+    <thead>
+      <tr>
+        <th>Time</th>
+        <th>Velocity</th>
+        <th>Relative Velocity</th>
+      </tr>
+    </thead>
+    <tbody>
+      </tbody>
+  </table>
 
-                const reader = new FileReader();
-                reader.onload = (e) => {
-                    try {
-                        logToConsole("File is being read...");
-                        const data = new Uint8Array(e.target.result);
-                        const workbook = XLSX.read(data, { type: "array" });
-                        const sheetName = workbook.SheetNames[0];
-                        logToConsole(`Sheet name: ${sheetName}`);
+  <div class="console-data" id="output" style="margin-top: 20px; background-color: #f9f9f9; padding: 10px; border: 1px solid #ddd; max-height: 200px; overflow-y: auto;">Console output will appear here...</div>
 
-                        const sheet = workbook.Sheets[sheetName];
-                        const jsonData = XLSX.utils.sheet_to_json(sheet, { header: 1 });
-                        logToConsole("Parsed data:", jsonData);
+  <script>
+    // Use Electron's require to load XLSX (if available)
+    const XLSX = typeof require !== 'undefined' ? require('xlsx') : null;
 
-                        populateTable(jsonData);
-                    } catch (err) {
-                        logToConsole(`Error reading file: ${err.message}`);
-                    }
-                };
-                reader.readAsArrayBuffer(file);
+    // Handle Excel file input
+    document.getElementById('excelFileInput').addEventListener('change', (event) => {
+      const file = event.target.files[0];
+      if (file) {
+        logToConsole(`File selected: ${file.name}`);
+
+        const reader = new FileReader();
+        reader.onload = (e) => {
+          try {
+            logToConsole('File is being read...');
+            const data = new Uint8Array(e.target.result);
+            const workbook = XLSX ? XLSX.read(data, { type: 'array' }) : null;
+
+            if (workbook) {
+              const sheetName = workbook.SheetNames[0];
+              logToConsole(`Sheet name: ${sheetName}`);
+
+              const sheet = workbook.Sheets[sheetName];
+              const jsonData = XLSX.utils.sheet_to_json(sheet, { header: 1 });
+              logToConsole('Parsed data:', jsonData);
+
+              populateTable(jsonData);
             } else {
-                logToConsole("No file selected.");
+              logToConsole('Error: XLSX library not available. Please run this in an Electron environment for file uploads.');
             }
-        });
+          } catch (err) {
+            logToConsole(`Error reading file: ${err.message}`);
+          }
+        };
+        reader.readAsArrayBuffer(file);
+      } else {
+        logToConsole('No file selected.');
+      }
+    });
 
-        function populateTable(data) {
-            const tableBody = document.querySelector("#data-table tbody");
-            tableBody.innerHTML = "";
+    function populateTable(data) {
+      const tableBody = document.querySelector('#data-table tbody');
+      tableBody.innerHTML = '';
 
-            if (data.length > 1) {
-                const headers = data[0];
-                const columnIndexes = {
-                    time: headers.findIndex(header => header.trim().toLowerCase() === "time"),
-                    velocity: headers.findIndex(header => header.trim().toLowerCase() === "velocity"),
-                    relativeVelocity: headers.findIndex(header => header.trim().toLowerCase() === "relative velocity"),
-                };
-
-                if (columnIndexes.time === -1 || columnIndexes.velocity === -1 || columnIndexes.relativeVelocity === -1) {
-                    logToConsole("Error: The Excel file must contain 'Time', 'Velocity', and 'Relative Velocity' columns.");
-                    return;
-                }
-
-                for (let i = 1; i < data.length; i++) {
-                    const row = data[i];
-                    const tableRow = document.createElement("tr");
-
-                    const timeCell = document.createElement("td");
-                    timeCell.textContent = row[columnIndexes.time] || "N/A";
-                    tableRow.appendChild(timeCell);
-
-                    const velocityCell = document.createElement("td");
-                    velocityCell.textContent = row[columnIndexes.velocity] || "N/A";
-                    tableRow.appendChild(velocityCell);
-
-                    const relativeVelocityCell = document.createElement("td");
-                    relativeVelocityCell.textContent = row[columnIndexes.relativeVelocity] || "N/A";
-                    tableRow.appendChild(relativeVelocityCell);
-
-                    tableBody.appendChild(tableRow);
-                }
-
-                logToConsole("Table populated with data.");
-            } else {
-                logToConsole("Error: No data found in the Excel file.");
-            }
-        }
-
-        function logToConsole(message) {
-            const outputDiv = document.getElementById("output");
-            const logMessage = document.createElement("p");
-            logMessage.textContent = message;
-            outputDiv.appendChild(logMessage);
-            outputDiv.scrollTop = outputDiv.scrollHeight;
-        }
-
-        document.getElementById("returnHome").onclick = () => {
-            window.location.href = "index.html";
+      if (data.length > 1) {
+        const headers = data[0];
+        const columnIndexes = {
+          time: headers.findIndex(header => header.trim().toLowerCase() === 'time'),
+          velocity: headers.findIndex(header => header.trim().toLowerCase() === 'velocity'),
+          relativeVelocity: headers.findIndex(header => header.trim().toLowerCase() === 'relative velocity'),
         };
 
-        document.getElementById("returnToVideo").onclick = () => {
-            // Save video path to sessionStorage
-            const videoPlayer = document.getElementById("videoPlayer");
-            if (videoPlayer) {
-                const videoPath = videoPlayer.src;
-                sessionStorage.setItem("videoPath", videoPath);
-            }
+        if (columnIndexes.time === -1 || columnIndexes.velocity === -1 || columnIndexes.relativeVelocity === -1) {
+          logToConsole("Error: The Excel file must contain 'Time', 'Velocity', and 'Relative Velocity' columns.");
+          return;
+        }
 
-            // Navigate to playvideo.html
-            window.location.href = "playvideo.html";
-        };
+        for (let i = 1; i < data.length; i++) {
+          const row = data[i];
+          const tableRow = document.createElement('tr');
 
-        document.getElementById("exitApp").onclick = () => {
-            if (typeof require !== "undefined") {
-                const { ipcRenderer } = require("electron");
-                ipcRenderer.send("close-app");
-            } else {
-                console.error("Exit is only supported in a desktop environment like Electron.");
-            }
-        };
-    </script>
+          const timeCell = document.createElement('td');
+          timeCell.textContent = row[columnIndexes.time] || 'N/A';
+          tableRow.appendChild(timeCell);
+
+          const velocityCell = document.createElement('td');
+          velocityCell.textContent = row[columnIndexes.velocity] || 'N/A';
+          tableRow.appendChild(velocityCell);
+
+          const relativeVelocityCell = document.createElement('td');
+          relativeVelocityCell.textContent = row[columnIndexes.relativeVelocity] || 'N/A';
+          tableRow.appendChild(relativeVelocityCell);
+
+          tableBody.appendChild(tableRow);
+        }
+
+        logToConsole('Table populated with data.');
+      } else {
+        logToConsole("Error: No data found in the Excel file.");
+      }
+    }
+
+    function logToConsole(message) {
+      const outputDiv = document.getElementById('output');
+      const logMessage = document.createElement('p');
+      logMessage.textContent = message;
+      outputDiv.appendChild(logMessage);
+      outputDiv.scrollTop = outputDiv.scrollHeight;
+    }
+
+    document.getElementById("returnHome").onclick = () => {
+      window.location.href = "index.html";
+    };
+
+    document.getElementById("returnToVideo").onclick = () => {
+      // Assuming you have a way to get the current video path (e.g., from a video player element)
+      const videoPath = sessionStorage.getItem('videoPath'); 
+      if (videoPath) {
+        sessionStorage.setItem("videoPath", videoPath); 
+      }
+      window.location.href = "playvideo.html";
+    };
+
+    document.getElementById("exitApp").onclick = () => {
+      if (typeof require !== "undefined") {
+        const { ipcRenderer } = require("electron");
+        ipcRenderer.send("close-app"); // Sends the event to the main process
+      } else {
+        console.error("Exit is only supported in a desktop environment like Electron.");
+      }
+    };
+  </script>
 </body>
 </html>

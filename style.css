@@ -1,7 +1,7 @@
 body {
     margin: 0;
     font-family: 'Georgia', serif;
-    background: url('/Users/ayushma/Desktop/PROJECT/my-electron-app/assets/images/prot1.jpg') no-repeat center center fixed;
+    background: url('D://coding//python//coded//my-electron-app//assets//images//prot1.jpg') no-repeat center center fixed;
     background-size: cover;
     display: flex;
     justify-content: center;
@@ -28,6 +28,28 @@ h1 {
     font-weight: lighter;
     letter-spacing: 2px;
 }
+#progressContainer {
+    width: 100%;
+    background-color: #ddd;
+    border-radius: 5px;
+    margin: 20px auto;
+    display: none; /* Hidden by default */
+  }
+
+  #myProgress {
+    width: 100%;
+    background-color: #ddd;
+    border-radius: 5px;
+    margin: 20px 0;
+    display: none; /* Hidden by default */
+  }
+/* The actual progress bar */
+#myBar {
+    width: 1%;
+    height: 30px;
+    background-color: #4CAF50;
+    border-radius: 5px;
+  }
 
 #uploadButton {
     margin-top: 20rem;
@@ -78,75 +100,4 @@ h1 {
 
 #displayAnalysisButton{
     transform: scale(1);
-} 
-.progress-container {
-    width: 50%;
-    max-width: 400px;
-    height: 12px;
-    background: #111111; 
-    border-radius: 50px;
-    margin: 20px auto;
-    display: none;
-    border: 2px solid #d4af37; 
-    overflow: hidden;
-    position: relative;
-    box-shadow: 0px 0px 12px rgba(255, 215, 0, 0.4); 
-}
-.progress-container {
-    width: 50%;
-    max-width: 400px;
-    height: 12px;
-    background: #111111; 
-    border-radius: 50px;
-    margin: 20px auto;
-    display: none;
-    border: 2px solid #d4af37; 
-    overflow: hidden;
-    position: relative;
-    box-shadow: 0px 0px 12px rgba(255, 215, 0, 0.4); 
-}
-
-
-.progress-bar {
-    width: 0%;
-    height: 100%;
-    background: linear-gradient(90deg, #c9a227, #ffcc00); 
-    text-align: center;
-    line-height: 12px;
-    color: white;
-    font-weight: bold;
-    border-radius: 50px;
-    transition: width 0.3s ease-in-out;
-    animation: softGlow 1.5s infinite alternate;
-    position: relative;
-}
-
-@keyframes softGlow {
-    0% {
-        box-shadow: 0px 0px 10px rgba(255, 215, 0, 0.3);
-    }
-    100% {
-        box-shadow: 0px 0px 20px rgba(255, 204, 0, 0.8);
-    }
-}
-
-.progress-bar::after {
-    content: "";
-    position: absolute;
-    top: 50%;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    background: radial-gradient(circle, rgba(255, 204, 0, 0.7) 10%, rgba(255, 204, 0, 0) 80%);
-    animation: moveStreak 1.5s linear infinite;
-    opacity: 0.5;
-}
-
-@keyframes moveStreak {
-    0% {
-        transform: translateX(-100%);
-    }
-    100% {
-        transform: translateX(100%);
-    }
 }

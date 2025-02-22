@@ -1,47 +1,68 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" rel="stylesheet">
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>RRR Project - Play Video</title>
   <link rel="stylesheet" href="./playvideo.css" />
-
-  <!--  FontAwesome for Icons -->
-  <link rel="stylesheet" href="./assets/css/fontawesome.min.css">
-  <link rel="stylesheet" href="./assets/css/all.min.css">
-
-  <!--  Security Policy -->
-  <meta http-equiv="Content-Security-Policy" content="
-      default-src 'self';
-      script-src 'self';
-      style-src 'self' 'unsafe-inline';
-      font-src 'self' data:;
-      media-src 'self';
-      connect-src 'self';
-  ">
 </head>
 <body>
-  
-  <!-- Navigation Buttons -->
-  <div id="navigationButtons">
-      <button id="returnHome">
-          <i class="fa-solid fa-house-chimney"></i>
-      </button>
-      <button id="exitApp">
-          <i class="fa-solid fa-right-from-bracket"></i>
-      </button>
+  <div id="backToHome" style="display:flex; cursor: pointer; margin-right: 40rem; margin-top: -6rem;">
+    <div class="tooltip-container" style="margin-left: 13rem;">
+      <i id="returnHome" class="fa-solid fa-house-chimney" style="font-size: 34px; color: rgb(22, 14, 68);"></i>
+      <span class="tooltip">Go to Home</span>
+    </div>
+    
+    <div class="tooltip-container" style="margin-left: 13rem;">
+      <i id="exitApp" class="fa-solid fa-right-from-bracket" style="font-size: 34px; color: rgb(22, 14, 68);"></i>
+      <span class="tooltip">Exit</span>
+    </div>
   </div>
-
-  <!--  Video Container -->
+  
   <div class="container">
-    <video id="videoPlayer" controls>
-      Your browser does not support the video tag.
-    </video>
+    <video id="videoPlayer" controls>Your browser does not support the video tag.</video>
     <div>
-      <button id="displayRecklessListButton">Display Reckless List</button>
+      <button id="recklessListButton">Display Reckless List</button>
     </div>
   </div>
 
-  <script src="./playvideo.js"></script>
+  <script>
+    // Get video path from URL or sessionStorage
+    const urlParams = new URLSearchParams(window.location.search);
+    const videoPath = urlParams.get("videoPath") || sessionStorage.getItem("videoPath");
+
+    if (videoPath) {
+        const videoPlayer = document.getElementById("videoPlayer");
+        videoPlayer.src = decodeURIComponent(videoPath);
+        videoPlayer.play();
+    } else {
+        console.error("No video path provided.");
+    }
+
+    document.getElementById("recklessListButton").onclick = () => {
+        // Save the video path in sessionStorage
+        const videoPlayer = document.getElementById("videoPlayer");
+        if (videoPlayer) {
+            sessionStorage.setItem("videoPath", videoPlayer.src);
+        }
+
+        window.location.href = "reckless.html";
+    };
+
+    document.getElementById("returnHome").onclick = () => {
+        window.location.href = "index.html"; 
+    };
+
+    document.getElementById("exitApp").onclick = () => {
+    if (typeof require !== "undefined") {
+        const { ipcRenderer } = require("electron");
+        ipcRenderer.send("close-app"); 
+    } else {
+        console.error("Exit is only supported in a desktop environment like Electron.");
+    }
+};
+
+  </script>
 </body>
 </html>
