@@ -1,11 +1,10 @@
-<!DOCTYPE html> 
+<!DOCTYPE html>
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>RRR Project - Select Video</title>
-    <!-- Update the link to style.css to use a relative path instead of a hardcoded Windows absolute path -->
-    <link rel="stylesheet" href="style.css" />
+    <link rel="stylesheet" href="D:\coding\python\coded\my-electron-app\style.css" />
   </head>
   <body>
     <div class="container">
@@ -13,6 +12,9 @@
       <button id="uploadButton">Select Video</button>
       <input type="file" id="fileInput" accept="video/*" style="display: none;" />
       <div id="status"></div>
+      <div id="myProgress">
+        <div id="myBar"></div>
+      </div>
       <button id="displayAnalysisButton" style="display: none">Display Analysis</button>
     </div>
 
@@ -28,23 +30,37 @@
         if (filePaths && filePaths.length > 0) {
           console.log("File paths:", filePaths);
           document.getElementById("status").innerText = "Processing selected file...";
+          // Show the progress bar container
+          document.getElementById("myProgress").style.display = "block";
+          
+          // Instruct the main process to start analysis (which in turn runs your Python code)
+          ipcRenderer.invoke("start-analysis", filePaths);
         } else {
           console.error("No file selected.");
           uploadButton.innerText = "Select Video";
         }
       });
 
+      // Listen for progress updates from the main process (relayed from your Python backend)
+      ipcRenderer.on("progress-update", (event, percentage) => {
+        const myBar = document.getElementById("myBar");
+        myBar.style.width = percentage + '%';
+        document.getElementById("status").innerText = `Processing: ${percentage.toFixed(2)}% completed`;
+      });
+
+      // Listen for analysis completion
       ipcRenderer.on("analysis:finished", (event, outputPath) => {
         console.log("Analysis finished. Output path:", outputPath);
-
         const uploadButton = document.getElementById("uploadButton");
 
         if (outputPath) {
           document.getElementById("status").innerText = "Finished analysis!";
           uploadButton.innerText = "Finished Analysis";
           uploadButton.disabled = true;
+          // Optionally hide the progress bar after finishing
+          document.getElementById("myProgress").style.display = "none";
 
-          // Hide the upload button after 3 seconds
+          // Hide the upload button after 3 seconds and show the analysis button
           setTimeout(() => {
             uploadButton.style.display = "none";
             const displayButton = document.getElementById("displayAnalysisButton");
@@ -53,8 +69,7 @@
 
           const displayButton = document.getElementById("displayAnalysisButton");
           displayButton.onclick = () => {
-            // Ensure that the outputPath is properly formatted for URL encoding
-            window.location.href = `playvideo.html?videoPath=${encodeURIComponent(outputPath.replace(/\\/g, '/'))}`;
+            window.location.href = `playvideo.html?videoPath=${encodeURIComponent(outputPath)}`;
           };
         } else {
           console.error("Invalid output path.");
