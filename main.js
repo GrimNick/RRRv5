@@ -31,23 +31,29 @@ ipcMain.handle('dialog:openFile', async (event) => {
     const videoPath = result.filePaths[0];
     console.log('Sending video path to Python script:', videoPath);
 
-    // Ensure that the Python script path uses backslashes for Windows compatibility
-    const pythonScriptPath = path.join(__dirname, 'model4.py');
-    
     const options = {
       args: [videoPath],
-      pythonOptions: ['-u'], // Use unbuffered mode
+      pythonOptions: ['-u'], // Use unbuffered mode to get real-time output
     };
 
-    const pyshell = new PythonShell(pythonScriptPath, options);
+    const pyshell = new PythonShell('D:\\coding\\python\\coded\\my-electron-app\\model4.py', options);
 
     // Listen for output from the Python script
     pyshell.on('message', (message) => {
       console.log('Python script message:', message);
+      
+      // Extract progress percentage using a regex
+      const progressRegex = /- (\d+\.\d+)% completed/;
+      const match = message.match(progressRegex);
+      if (match) {
+        const percentage = parseFloat(match[1]);
+        // Send the progress update to the renderer process
+        mainWindow.webContents.send("progress-update", percentage);
+      }
+      
+      // When processing is complete, notify the renderer
       if (message.includes('Processing complete')) {
-        // Notify the renderer process that analysis is finished
-        const processedVideoPath = videoPath.replace('.mp4', '_processed.mp4');
-        mainWindow.webContents.send('analysis:finished', processedVideoPath);
+        mainWindow.webContents.send('analysis:finished', videoPath.replace('.mp4', '_processed.mp4'));
       }
     });
 
