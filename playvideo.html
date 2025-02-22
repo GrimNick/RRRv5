@@ -6,85 +6,128 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>RRR Project - Play Video</title>
   <link rel="stylesheet" href="./playvideo.css" />
+  <style>
+    /* Button container */
+    .button-container {
+      display: flex;
+      justify-content: center;
+      gap: 15px;
+      margin-top: 20px;
+    }
+
+    /* Styled buttons - Navy Blue */
+    .custom-button {
+      background: linear-gradient(90deg, #0f1b40, #162a64);
+      color: white;
+      border: none;
+      padding: 12px 20px;
+      font-size: 16px;
+      font-weight: bold;
+      border-radius: 8px;
+      cursor: pointer;
+      transition: all 0.3s ease-in-out;
+      box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.3);
+      outline: none;
+    }
+
+    .custom-button:hover {
+      background: linear-gradient(90deg, #162a64, #1d3a80);
+      transform: scale(1.05);
+      box-shadow: 0px 6px 12px rgba(22, 42, 100, 0.6);
+    }
+
+    .custom-button:active {
+      transform: scale(0.98);
+    }
+
+    /* Responsive adjustments */
+    @media screen and (max-width: 768px) {
+      .button-container {
+        flex-direction: column;
+        gap: 10px;
+        align-items: center;
+      }
+      
+      .custom-button {
+        width: 80%;
+        text-align: center;
+      }
+    }
+  </style>
 </head>
 <body>
   <div id="backToHome" style="display:flex; cursor: pointer; margin-right: 40rem; margin-top: -6rem;">
     <div class="tooltip-container" style="margin-left: 13rem;">
-      <i id="returnHome" class="fa-solid fa-house-chimney" style="font-size: 34px; color: rgb(22, 14, 68);"></i>
+      <i id="returnHome" class="fa-solid fa-house-chimney" style="font-size: 34px; color: rgb(15, 27, 64);"></i>
       <span class="tooltip">Go to Home</span>
     </div>
     
     <div class="tooltip-container" style="margin-left: 13rem;">
-      <i id="exitApp" class="fa-solid fa-right-from-bracket" style="font-size: 34px; color: rgb(22, 14, 68);"></i>
+      <i id="exitApp" class="fa-solid fa-right-from-bracket" style="font-size: 34px; color: rgb(15, 27, 64);"></i>
       <span class="tooltip">Exit</span>
     </div>
   </div>
   
   <div class="container">
     <video id="videoPlayer" controls>Your browser does not support the video tag.</video>
-    <div>
-      <button id="openExcelButton1">Open Every Vehicle List</button>
-      <button id="openExcelButton2">Open Statistical Analysis</button>
-      <button id="openExcelButton3">Open Model prediction</button>
-
+    
+    <div class="button-container">
+      <button id="openExcelButton1" class="custom-button"> Open Every Vehicle List</button>
+      <button id="openExcelButton2" class="custom-button"> Open Statistical Analysis</button>
+      <button id="openExcelButton3" class="custom-button"> Open Model Prediction</button>
     </div>
   </div>
 
   <script>
-    // Get video path from URL or sessionStorage
-    const urlParams = new URLSearchParams(window.location.search);
-    const videoPath = urlParams.get("videoPath") || sessionStorage.getItem("videoPath");
-
-
-    //test by newton
-
-    const { ipcRenderer } = require('electron');
-
-    // Event listener for the button click
-    document.getElementById('openExcelButton1').addEventListener('click', () => {
-        // Send a message to the main process to load the Excel file
-        ipcRenderer.send('open-excel-file1');
-    });
-    document.getElementById('openExcelButton2').addEventListener('click', () => {
-        // Send a message to the main process to load the Excel file
-        ipcRenderer.send('open-excel-file2');
-    });
-    document.getElementById('openExcelButton3').addEventListener('click', () => {
-        // Send a message to the main process to load the Excel file
-        ipcRenderer.send('open-excel-file3');
-    });
-//delete till here test test
-    if (videoPath) {
-        const videoPlayer = document.getElementById("videoPlayer");
-        videoPlayer.src = decodeURIComponent(videoPath);
-        videoPlayer.play();
-    } else {
-        console.error("No video path provided.");
-    }
-
-    document.getElementById("recklessListButton").onclick = () => {
-        // Save the video path in sessionStorage
-        const videoPlayer = document.getElementById("videoPlayer");
-        if (videoPlayer) {
-            sessionStorage.setItem("videoPath", videoPlayer.src);
-        }
-
-        window.location.href = "reckless.html";
-    };
-
-    document.getElementById("returnHome").onclick = () => {
-        window.location.href = "index.html"; 
-    };
-
-    document.getElementById("exitApp").onclick = () => {
     if (typeof require !== "undefined") {
-        const { ipcRenderer } = require("electron");
-        ipcRenderer.send("close-app"); 
-    } else {
-        console.error("Exit is only supported in a desktop environment like Electron.");
-    }
-};
+      const { ipcRenderer } = require("electron");
 
+      console.log("Electron detected. IPC Renderer initialized.");
+
+      // Load video from URL or sessionStorage
+      const urlParams = new URLSearchParams(window.location.search);
+      const videoPath = urlParams.get("videoPath") || sessionStorage.getItem("videoPath");
+
+      if (videoPath) {
+          const videoPlayer = document.getElementById("videoPlayer");
+          videoPlayer.src = decodeURIComponent(videoPath);
+          videoPlayer.play();
+          console.log("Video loaded:", videoPath);
+      } else {
+          console.error("No video path provided.");
+      }
+
+      // Home Button - Redirect to index.html
+      document.getElementById("returnHome").addEventListener("click", () => {
+          console.log("Home button clicked. Redirecting...");
+          window.location.href = "index.html"; 
+      });
+
+      // Exit Button - Close the Electron app
+      document.getElementById("exitApp").addEventListener("click", () => {
+          console.log("Exit button clicked. Closing app...");
+          ipcRenderer.send("app:exit");
+      });
+
+      // Open Excel files
+      document.getElementById("openExcelButton1").addEventListener("click", () => {
+          console.log("Opening Excel File 1...");
+          ipcRenderer.send("open-excel-file1");
+      });
+
+      document.getElementById("openExcelButton2").addEventListener("click", () => {
+          console.log("Opening Excel File 2...");
+          ipcRenderer.send("open-excel-file2");
+      });
+
+      document.getElementById("openExcelButton3").addEventListener("click", () => {
+          console.log("Opening Excel File 3...");
+          ipcRenderer.send("open-excel-file3");
+      });
+
+    } else {
+      console.error("Electron IPC Renderer is not available.");
+    }
   </script>
 </body>
 </html>
