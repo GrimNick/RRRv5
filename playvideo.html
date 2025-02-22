@@ -23,7 +23,10 @@
   <div class="container">
     <video id="videoPlayer" controls>Your browser does not support the video tag.</video>
     <div>
-      <button id="recklessListButton">Display Reckless List</button>
+      <button id="openExcelButton1">Open Every Vehicle List</button>
+      <button id="openExcelButton2">Open Statistical Analysis</button>
+      <button id="openExcelButton3">Open Model prediction</button>
+
     </div>
   </div>
 
@@ -32,6 +35,25 @@
     const urlParams = new URLSearchParams(window.location.search);
     const videoPath = urlParams.get("videoPath") || sessionStorage.getItem("videoPath");
 
+
+    //test by newton
+
+    const { ipcRenderer } = require('electron');
+
+    // Event listener for the button click
+    document.getElementById('openExcelButton1').addEventListener('click', () => {
+        // Send a message to the main process to load the Excel file
+        ipcRenderer.send('open-excel-file1');
+    });
+    document.getElementById('openExcelButton2').addEventListener('click', () => {
+        // Send a message to the main process to load the Excel file
+        ipcRenderer.send('open-excel-file2');
+    });
+    document.getElementById('openExcelButton3').addEventListener('click', () => {
+        // Send a message to the main process to load the Excel file
+        ipcRenderer.send('open-excel-file3');
+    });
+//delete till here test test
     if (videoPath) {
         const videoPlayer = document.getElementById("videoPlayer");
         videoPlayer.src = decodeURIComponent(videoPath);
