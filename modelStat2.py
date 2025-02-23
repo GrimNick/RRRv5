@@ -53,14 +53,17 @@ for sheet_name, df in sheets.items():
     flag_variance = 1 if variance > 150 else 0
     flag_skewness = 1 if skewness > 6 else 0
     flag_kurtosis = 1 if kurtosis < 10 else 0
-    flag_peak_to_peak = 1 if peak_to_peak > 40 else 0
+    flag_peak_to_peak = 1 if peak_to_peak > 60 else 0
     flag_comparison_mean = 1 if comparison_mean > 10 else 0
     # Calculate total flag as the sum of all individual flags
     total_flag = (
         flag_std_dev + flag_mean_velocity + flag_variance +
         flag_skewness + flag_kurtosis + flag_peak_to_peak + flag_comparison_mean
     )
-    flag_reckless_status = 'Yes' if total_flag >= 4 else 'No'
+    if flag_peak_to_peak == 1:
+        flag_reckless_status = 'Yes'
+    else:
+        flag_reckless_status = 'Yes' if total_flag >= 4 else 'No'
     
     # Add all values to the summary entry
     summary_entry = {
