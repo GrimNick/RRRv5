@@ -15,7 +15,7 @@ output_path = os.path.join(directory, f"{file_root[:-1]}3{file_ext}")
 
 # Constants for the road dimensions in meters
 horizontal_road_length = 8.41 # in meters (used for horizontal scaling)
-vertical_road_length = 68.3   # in meters (for reference, but not used for scaling)
+vertical_road_length = 38.3   # in meters (for reference, but not used for scaling)
 
 # Open the input Excel file
 excel_data = pd.ExcelFile(input_path)
@@ -44,20 +44,22 @@ for sheet_name in excel_data.sheet_names:
         # Apply scaling if max_velocity or max_relative_velocity is greater than 0
         if max_velocity > 0:
             # Convert 'Velocity' from pixels to meters (horizontal scaling)
-            horizontal_scale = horizontal_road_length / max_velocity
+            vertical_scale= vertical_road_length / max_velocity
         else:
-            horizontal_scale = 0  # Avoid division by zero, set a default scale
+            vertical_scale = 0  # Avoid division by zero, set a default scale
 
         if max_relative_velocity > 0:
             # Convert 'Relative Velocity' from pixels to meters (same horizontal scaling)
-            vertical_scale = horizontal_scale  # Use the same scale for relative velocity
+            horizontal_scale= horizontal_road_length / max_relative_velocity
         else:
-            vertical_scale = 0  # Avoid division by zero, set a default scale
+            horizontal_scale = 0  # Avoid division by zero, set a default scale
         
         # Apply horizontal scaling for both Velocity and Relative Velocity
         if horizontal_scale > 0:
-            df['Velocity'] = df['Velocity'] * horizontal_scale
-        
+            df['Velocity'] = df['Velocity'] * vertical_scale
+        if vertical_scale > 0:
+            df['Relative Velocity'] = df['Relative Velocity'] * horizontal_scale
+
 
         # Convert from meters per second to kilometers per hour (1 m/s = 3.6 km/h)
         df['Velocity'] = df['Velocity'] * 3.6
