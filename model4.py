@@ -29,11 +29,11 @@ def get_min_box_area_for_class(class_id):
     """Return the minimum bounding box area based on vehicle type."""
     class_name = model.names[class_id]
     if class_name in {'truck', 'bus'}:
-        return 20000
-    elif class_name in {'car'}:
         return 10000
+    elif class_name in {'car'}:
+        return 5000
     elif class_name in {'motorbike', 'motorcycle'}:
-        return 20
+        return 10
     else:
         return 20  # default fallback
 
@@ -97,7 +97,7 @@ class KalmanFilter:
                            [0, 1, 0, 1], 
                            [0, 0, 1, 0], 
                            [0, 0, 0, 1]])
-        self.Q = np.diag([2.0, 2.0, 0.5, 0.5])  # Process noise
+        self.Q = np.diag([2.0, 2.0, 1, 1])  # Process noise
         self.H = np.array([[1, 0, 0, 0], 
                            [0, 1, 0, 0]])
         self.R = np.diag([0.1, 0.1])  # Measurement noise
@@ -228,7 +228,7 @@ def process_video(video_path):
         if not ret:
             break
 
-        results = model(frame ,conf= 0.25,imgsz= 1280) 
+        results = model(frame ,conf= 0.1,imgsz= 1280) 
         detected_objects = []
         detected_boxes = []
         detected_classes = []

@@ -48,7 +48,7 @@ for sheet_name, df in sheets.items():
     comparison_mean = 0 if pd.isna(comparison_mean) else comparison_mean
 
     # Set flags based on specified conditions
-    flag_std_dev = 1 if std_dev > 15 else 0
+    flag_std_dev = 1 if std_dev > 16 else 0
     flag_mean_velocity = 1 if mean_velocity > 40 else 0
     flag_variance = 1 if variance > 150 else 0
     flag_skewness = 1 if skewness > 6 else 0
